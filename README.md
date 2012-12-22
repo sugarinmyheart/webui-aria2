@@ -35,4 +35,4 @@ Refer to the LICENSE file (MIT License). If the more liberal license is needed t
 
 汉化
 ====
-ghostry（http://ghostry.cn）进行了部分汉化 
+ghostry（ http://ghostry.cn ）进行了部分汉化 
