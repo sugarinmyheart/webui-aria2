@@ -32,3 +32,7 @@ For any support, feature request and bug report add an issue in the github proje
 License
 =======
 Refer to the LICENSE file (MIT License). If the more liberal license is needed then add it as an issue
+
+汉化
+====
+ghostry（http://ghostry.cn）进行了部分汉化 

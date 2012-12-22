@@ -85,17 +85,17 @@
 		</div>
 		<div class="span6">
 			<div class="pull-right">
-				<span class="label label-success">Remaining: <span class="tmp_remaining">{{remaining}}</span></span> |
-				<span class="label label-success">Progress: <span class="tmp_percentage">{{percentage}}</span>%</span> |
-				<span class="label label-success">Speed: <span class="tmp_down_speed">{{down_speed}}</span></span> |
-				<span class="label label-success">Time left: <span class="tmp_eta">{{eta}}</span></span>
+				<span class="label label-success">剩余大小: <span class="tmp_remaining">{{remaining}}</span></span> |
+				<span class="label label-success">进度: <span class="tmp_percentage">{{percentage}}</span>%</span> |
+				<span class="label label-success">速度: <span class="tmp_down_speed">{{down_speed}}</span></span> |
+				<span class="label label-success">剩余时间: <span class="tmp_eta">{{eta}}</span></span>
 			</div>
 		</div>
 		<div class="span3">
 			<div class="button_set">
-				<button class="btn btn-mini download_pause"><i class="icon-pause"></i>Pause</button>
-				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> More Info</button>
-				<button class="btn btn-mini btn-danger download_remove"><i class="icon-remove"></i> Remove</button>
+				<button class="btn btn-mini download_pause"><i class="icon-pause"></i>暂停</button>
+				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> 更多信息</button>
+				<button class="btn btn-mini btn-danger download_remove"><i class="icon-remove"></i> 删除</button>
 			</div>
 		</div>
 		<br>
@@ -142,18 +142,18 @@
 			<b style="font-size: 12px;" class="tmp_name">{{name}}</b>
 		</div>
 		<div class="span6">
-			<span class="badge badge-warning">Status: <span class="tmp_status">{{status}}</span></span>
+			<span class="badge badge-warning">状态: <span class="tmp_status">{{status}}</span></span>
 			<div class="pull-right">
-				<span class="label label-warning">Size: <span class="tmp_size">{{size}}</span></span> |
-				<span class="label label-warning">Remaining: <span class="tmp_remaining">{{remaining}}</span></span> |
-				<span class="label label-warning">Progress: <span class="tmp_percentage">{{percentage}}</span>%</span>
+				<span class="label label-warning">大小: <span class="tmp_size">{{size}}</span></span> |
+				<span class="label label-warning">剩余大小: <span class="tmp_remaining">{{remaining}}</span></span> |
+				<span class="label label-warning">进度: <span class="tmp_percentage">{{percentage}}</span>%</span>
 			</div>
 		</div>
 		<div class="span3">
 			<div class="button_set">
-				<button class="btn btn-mini download_play"><i class="icon-play"></i> Resume</button>
-				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> More Info</button>
-				<button class="btn btn-mini btn-danger download_remove"><i class="icon-fire"></i> Purge</button>
+				<button class="btn btn-mini download_play"><i class="icon-play"></i> 恢复</button>
+				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> 更多信息</button>
+				<button class="btn btn-mini btn-danger download_remove"><i class="icon-fire"></i> 清除</button>
 			</div>
 		</div>
 		<br>
@@ -185,27 +185,27 @@
 		</div>
 		<div class="span6">
 			{{#booleans.is_error}}
-			<span class="badge badge-important">Status: <span class="tmp_status">{{status}}</span></span>
+			<span class="badge badge-important">状态: <span class="tmp_status">{{status}}</span></span>
 			<div class="pull-right">
-				<span class="label label-important">Size: <span class="tmp_size">{{size}}</span></span> |
-				<span class="label label-important">Downloaded: <span class="tmp_downloaded">{{downloaded}}</span></span> |
-				<span class="label label-important">Progress: <span class="tmp_percentage">{{percentage}}</span>%</span>
+				<span class="label label-important">大小: <span class="tmp_size">{{size}}</span></span> |
+				<span class="label label-important">已下载: <span class="tmp_downloaded">{{downloaded}}</span></span> |
+				<span class="label label-important">进度: <span class="tmp_percentage">{{percentage}}</span>%</span>
 			</div>
 			{{/booleans.is_error}}
 			{{^booleans.is_error}}
-			<span class="badge badge-info">Status: <span class="tmp_status">{{status}}</span></span>
+			<span class="badge badge-info">状态: <span class="tmp_status">{{status}}</span></span>
 			<div class="pull-right">
-				<span class="label label-info">Size: <span class="tmp_size">{{size}}</span></span> |
-				<span class="label label-info">Downloaded: <span class="tmp_downloaded">{{downloaded}}</span></span> |
-				<span class="label label-info">Progress: <span class="tmp_percentage">{{percentage}}</span>%</span>
+				<span class="label label-info">大小: <span class="tmp_size">{{size}}</span></span> |
+				<span class="label label-info">已下载: <span class="tmp_downloaded">{{downloaded}}</span></span> |
+				<span class="label label-info">进度: <span class="tmp_percentage">{{percentage}}</span>%</span>
 			</div>
 			{{/booleans.is_error}}
 		</div>
 		<div class="span3">
 			<div class="button_set">
-				<button class="btn btn-mini download_restart"><i class="icon-repeat"></i> Restart</button>
-				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> More Info</button>
-				<button class="btn btn-mini btn-danger download_remove"><i class="icon-fire"></i> Purge</button>
+				<button class="btn btn-mini download_restart"><i class="icon-repeat"></i> 重试</button>
+				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> 更多信息</button>
+				<button class="btn btn-mini btn-danger download_remove"><i class="icon-fire"></i> 清除</button>
 			</div>
 		</div>
 		<br>
@@ -409,30 +409,30 @@
 			<span class="icon-bar"></span>
 		</a>
 
-		<a class="brand" href="#">aria2 Web-Client</a>
+		<a class="brand" href="#">aria2 下载管理</a>
 		<div class="nav-collapse">
 		<ul class="nav">
-			<li class="active"><a href="#">All Downloads</a></li>
+			<li class="active"><a href="#">所有下载</a></li>
 			<li class="dropdown" id="add_download">
 			<a class="dropdown-toggle" data-toggle="dropdown" href="#add_download">
-				Add Download
+				新建下载
 				<b class="caret"></b>
 			</a>
 			<ul class="dropdown-menu">
-				<li><a id="newDownload" href="#">Add Download url</a></li>
-				<li><a id="newDownload_metalink" href="#">Add Metalink</a></li>
-				<li><a id="newDownload_torrent" href="#">Add Torrent</a></li>
+				<li><a id="newDownload" href="#">普通下载</a></li>
+				<li><a id="newDownload_metalink" href="#">磁力链接</a></li>
+				<li><a id="newDownload_torrent" href="#">BT种子</a></li>
 			</ul>
 			</li>
 			<li class="dropdown" id="stop_downloads">
 			<a class="dropdown-toggle" data-toggle="dropdown" href="#stop_downloads">
-				Stop Downloads
+				操作全部
 				<b class="caret"></b>
 			</a>
 			<ul class="dropdown-menu">
-				<li><a href="#" onclick="force_pause_all()"><i class="icon-pause"></i> Pause All downloads</a></li>
-				<li><a href="#" onclick="force_remove_all()"><i class="icon-remove"></i> Remove All downloads</a></li>
-				<li><a href="#" onclick="force_purge_all()"><i class="icon-fire"></i> Purge All downloads</a></li>
+				<li><a href="#" onclick="force_pause_all()"><i class="icon-pause"></i> 暂停所有</a></li>
+				<li><a href="#" onclick="force_remove_all()"><i class="icon-remove"></i> 删除所有</a></li>
+				<li><a href="#" onclick="force_purge_all()"><i class="icon-fire"></i> 清除所有</a></li>
 			</ul>
 			</li>
 		</ul>
@@ -440,17 +440,17 @@
 		<ul class="nav pull-right">
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-					Other <b class="caret"></b>
+					设置 <b class="caret"></b>
 				</a>
 				<ul class="dropdown-menu">
 					<li><a href="#" onclick="custom_aria2_connect()">
-						<i class="icon-wrench"></i> Connection settings</a>
+						<i class="icon-wrench"></i> 连接设置</a>
 					</li>
 					<li><a href="#" onclick="custom_global_settings()">
-						<i class="icon-wrench"></i> Global settings</a></li>
+						<i class="icon-wrench"></i> 全局设置</a></li>
 					<li><a href="#" onclick="custom_global_statistics()">
-						<i class="icon-list-alt"></i> Global Statistics</a></li>
-					<li><a href="#" onclick="show_about()">About</a></li>
+						<i class="icon-list-alt"></i> 全局状态</a></li>
+					<li><a href="#" onclick="show_about()">关于</a></li>
 				</ul>
 			</li>
 		</ul>
@@ -477,7 +477,7 @@
 <div class="modal hide" id="error_connect">
 	<div class="modal-header">
 		<button class="close" data-dismiss="modal">x</button>
-		<h3>Connection to aria failed :( </h3>
+		<h3>连接到aria2失败 :( </h3>
 	</div>
 	<div class="modal-body">
 		<p>
@@ -486,8 +486,8 @@
 		</p>
 	</div>
 	<div class="modal-footer">
-		<a href="#" onclick="window.location.reload(true)" class="btn">Retry</a>
-		<a href="#" onclick="custom_aria2_connect()" class="btn btn-primary">Use custom IP and port settings</a>
+		<a href="#" onclick="window.location.reload(true)" class="btn">重试</a>
+		<a href="#" onclick="custom_aria2_connect()" class="btn btn-primary">修改连接设置</a>
 	</div>
 </div>
 <!-- error connection end }}}-->
@@ -515,7 +515,7 @@
 <div class="modal hide" id="about_modal">
 	<div class="modal-header">
 		<button class="close" data-dismiss="modal">x</button>
-		<h3>About </h3>
+		<h3>关于 </h3>
 	</div>
 	<div class="modal-body">
 		<p>
@@ -528,10 +528,12 @@
 			<a href="https://github.com/ziahamza/webui-aria2">http://github.com/ziahamza/webui-aria2</a>
 			<br>
 			Or you can open the latest version in browser through <a href="http://ziahamza.github.com/webui-aria2">http://ziahamza.github.com/webui-aria2</a>
+<br>
+		<a href="http://ghostry.cn">ghostry</a>汉化
 		</p>
 	</div>
 	<div class="modal-footer">
-		<a href="#" onclick="clear_dialogs()" class="btn">Close</a>
+		<a href="#" onclick="clear_dialogs()" class="btn">关闭</a>
 	</div>
 </div>
 <!-- About end }}}-->
@@ -563,19 +565,19 @@
 <div class="modal hide" id="change_conf">
 	<div class="modal-header">
 		<button class="close" data-dismiss="modal">x</button>
-		<h3>Connection Settings</h3>
+		<h3>连接设置</h3>
 	</div>
 	<div class="modal-body">
 		<form class="form-horizontal">
 			<fieldset>
-				<legend>Aria2 RPC host and port</legend>
+				<legend>Aria2 RPC 主机和端口</legend>
 				<div class="control-group">
-					<label class="control-label" for="input_host">Enter the host:</label>
+					<label class="control-label" for="input_host">主机地址:</label>
 					<div class="controls">
 						<div class="input-prepend"><span class="add-on">http(s)://</span><input type="text" class="input-xlarge" id="input_host" placeholder="localhost"/></div>
 						<p class="help-block">Enter the ip or dns name of the server on which the rpc for aria2 is running (default = localhost)</p>
 					</div>
-					<label class="control-label" for="input_port">Enter the port:</label>
+					<label class="control-label" for="input_port">端口:</label>
 					<div class="controls">
 						<input type="text" class="input-xlarge" placeholder="6800" id="input_port"/>
 						<p class="help-block">Enter the port of the server on which the rpc for aria2 is running (default = 6800)</p>
@@ -587,12 +589,12 @@
 						<p class="help-block">Enable SSL/TLS encryption.</p>
 					</div>
 
-					<label class="control-label" for="input_user">Enter the username (optional):</label>
+					<label class="control-label" for="input_user">用户名:</label>
 					<div class="controls">
 						<input type="text" class="input-xlarge" id="input_user"/>
 						<p class="help-block">Enter the aria2 RPC username (empty if authentication not enabled)</p>
 					</div>
-					<label class="control-label" for="input_pass">Enter the password (optional):</label>
+					<label class="control-label" for="input_pass">密码:</label>
 					<div class="controls">
 						<input type="password" class="input-xlarge" id="input_pass"/>
 						<p class="help-block">Enter the aria2 RPC password (empty if authentication not enabled)</p>
@@ -602,8 +604,8 @@
 		</form>
 	</div>
 	<div class="modal-footer">
-		<a href="#" onclick="window.location.reload(true)" class="btn">Retry with default configuration</a>
-		<a href="#" onclick="update_server_conf()" class="btn btn-primary">Use custom IP and port settings</a>
+		<a href="#" onclick="window.location.reload(true)" class="btn">重置</a>
+		<a href="#" onclick="update_server_conf()" class="btn btn-primary">确认</a>
 	</div>
 </div>
 <!-- change aria2 rpc host and port template }}}-->
@@ -612,13 +614,13 @@
 <div class="modal hide" id="new_torrent">
 	<div class="modal-header">
 		<button class="close" data-dismiss="modal">x</button>
-		<h3>Add new Torrents</h3>
+		<h3>添加BT种子</h3>
 	</div>
 	<div class="modal-body">
 		<form class="form-horizontal">
 			<fieldset>
 				<div class="control-group">
-					<label class="control-label" for="input_torrent">Select the torrent file:</label>
+					<label class="control-label" for="input_torrent">选择种子:</label>
 					<div class="controls">
 						<input type="file" class="input-xlarge" id="input_torrent" multiple/>
 						<p class="help-block">
@@ -632,8 +634,8 @@
 		</form>
 	</div>
 	<div class="modal-footer">
-		<a href="#" onclick="add_torrent()" class="btn">Add</a>
-		<a href="#" onclick="clear_dialogs()" class="btn">Cancel</a>
+		<a href="#" onclick="add_torrent()" class="btn">添加</a>
+		<a href="#" onclick="clear_dialogs()" class="btn">取消</a>
 	</div>
 </div>
 <!-- add new torrent end }}}-->
@@ -642,19 +644,20 @@
 <div class="modal hide" id="new_metalink">
 	<div class="modal-header">
 		<button class="close" data-dismiss="modal">x</button>
-		<h3>Add new Metalinks</h3>
+		<h3>添加磁力链</h3>
 	</div>
 	<div class="modal-body">
 		<form class="form-horizontal">
 			<fieldset>
-				<legend>Metalink File upload</legend>
+				<legend>上传磁力链文件</legend>
 				<div class="control-group">
-					<label class="control-label" for="input_metalink">Select the Metalink file:</label>
+					<label class="control-label" for="input_metalink">磁力链文件:</label>
 					<div class="controls">
 						<input type="file" class="input-xlarge" id="input_metalink" multiple/>
 						<p class="help-block">
 						Please select a local metalink file to initiate its downloads. Note that you
 						can select multiple metalink files at once to start
+如果是磁力链接请使用添加普通下载来添加。
 						</p>
 					</div>
 				</div>
@@ -662,8 +665,8 @@
 		</form>
 	</div>
 	<div class="modal-footer">
-		<a href="#" onclick="add_metalink()" class="btn">Add</a>
-		<a href="#" onclick="clear_dialogs()" class="btn">Cancel</a>
+		<a href="#" onclick="add_metalink()" class="btn">添加</a>
+		<a href="#" onclick="clear_dialogs()" class="btn">取消</a>
 	</div>
 </div>
 <!-- add new metalink end }}}-->
@@ -672,25 +675,25 @@
 <div class="modal hide" id="newDownload_modal">
 	<div class="modal-header">
 		<button class="close" data-dismiss="modal">x</button>
-		<h3>Add a new Download</h3>
+		<h3>添加普通下载</h3>
 	</div>
 	<div class="modal-body">
 		<form class="form-horizontal">
 			<fieldset>
-				<legend>Download urls</legend>
+				<legend>下载地址</legend>
 				<div class="control-group">
-					<label class="control-label" for="newDownload_url">Enter url for the Download:</label>
+					<label class="control-label" for="newDownload_url">输入下载地址:</label>
 					<div class="controls">
 						<input type="text" class="input-xlarge" id="newDownload_url" placeholder="http://example.com"/>
 						<button class="btn" href="#" id="multiple_uris"><i class="icon-plus-sign"></i></button>
-						<span class="help-block">URI can be HTTP(S)/FTP/BitTorrent Magnet URI. You can add multiple uris for the SAME file and the aria2 will accelerate download by downloading from many uris at the same time.</span>
+						<span class="help-block">可以使用 HTTP(S)/FTP/磁力链接. You can add multiple uris for the SAME file and the aria2 will accelerate download by downloading from many uris at the same time.</span>
 					</div>
 				</div>
 			</fieldset>
 		</form>
 	</div>
 	<div class="modal-footer">
-		<button id="addNewDownload" class="btn">Add Download</button>
+		<button id="addNewDownload" class="btn">添加</button>
 	</div>
 </div>
 <!-- add new Download template end }}}-->
