@@ -1,5 +1,6 @@
 webui-aria2
 ===========
+汉化版地址：http://aria2.ghostry.cn/webui-aria2-master/
 
 ![Main interface](/screenshots/overview.png?raw=true)
 
