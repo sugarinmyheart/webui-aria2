@@ -1,736 +1,1054 @@
-<!-- vim: set tabstop=4 shiftwidth=4 softtabstop=4 noexpandtab: -->
-<!doctype html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="cn"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="cn"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="cn"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="cn"> <!--<![endif]-->
+<!doctype>
+<html>
 
+<!-- {{{ head -->
 <head>
-	<link rel="icon" href="favicon.ico" />
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <link rel="icon" href="favicon.ico" />
 
-	<title>aria2 web client</title>
-	<meta name="description" content="">
-	<meta name="author" content="">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<meta name="viewport" content="width=device-width">
+  <title ng-controller="NavCtrl">{{ name }}</title>
 
-	<link rel="stylesheet" href="css/style.css">
-	<link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/bootstrap-responsive.css">
+  <link rel="stylesheet" href="css/font-awesome.min.css">
 
-	<script src="js/libs/modernizr-2.5.3.min.js"></script>
-	<script src="js/libs/jquery-1.7.2.js"></script>
-	<script src="js/libs/bootstrap.js"></script>
-	<script src="js/libs/mustache.js"></script>
-	<script src="js/libs/piecon.js"></script>
-	<script src="js/libs/underscore.js"></script>
-	<script src="js/aria2_settings.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/download.css">
+  <link rel="stylesheet" href="css/modals.css">
 
-	<script src="js/utils.js"></script>
-	<script src="js/connection.js"></script>
-	<!--[if IE ]>
-	<script type="text/javascript" src="js/libs/excanvas.compiled.js"></script>
-	<![endif]-->
-	<script src="js/libs/jquery.flot.min.js"></script>
+  <style>
+    /* temporary hack for angularui modal implementation */
+    .control-group input {
+      height: 30px;
+    }
+  </style>
 
-	<style>
-	.button_set {
-		float: right;
-		margin-bottom: 5px;
-	}
-	.stat_graph {
-		margin-top: 25px;
-		height: 220px;
-	}
-	.active_settings {
-		text-align: center;
-		margin-bottom: 3px;
-	}
-	#active_downloads {
-		min-width: 856px;
-	}
-	.active_graph {
-		height:300px;
-		margin-top: 10px;
-		margin-bottom: 10px;
-		min-width: 856px;
-		width: 80%;
-	}
-	.download_item {
-		margin-bottom: 10px;
-		padding-top: 10px;
-		background-color: rgb(245, 245, 245);
-		border: 1px solid rgba(0, 0, 0, 0.05);
-		border-radius: 4px 4px 4px 4px;
-		box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);
-	}
-	.download_name {
-		overflow: hidden;
-		word-wrap: break-word;
-	}
-	@media all and (min-width: 980px) {
-		body {
-			padding-top: 60px;
-		}
-	}
 
-	</style>
+  <!-- external javascript dependencies -->
+  <script src="js/libs/jquery-2.1.0.js"></script>
+  <script src="js/libs/lodash.js"></script>
 
-	<!--{{{ active downloads template -->
-	<script type="text/mustache" id="download_active_template">
-		<div class="row download_item download_active_item" data-gid="{{gid}}" data-settingsName={{sett_name}}>
-		<div class="span2 download_name">
-			<b style="font-size: 12px;" class="tmp_name">{{name}}</b>
-		</div>
-		<div class="span6">
-			<div class="pull-right">
-				<span class="label label-success">剩余大小: <span class="tmp_remaining">{{remaining}}</span></span> |
-				<span class="label label-success">进度: <span class="tmp_percentage">{{percentage}}</span>%</span> |
-				<span class="label label-success">速度: <span class="tmp_down_speed">{{down_speed}}</span></span> |
-				<span class="label label-success">剩余时间: <span class="tmp_eta">{{eta}}</span></span>
-			</div>
-		</div>
-		<div class="span3">
-			<div class="button_set">
-				<button class="btn btn-mini download_pause"><i class="icon-pause"></i>暂停</button>
-				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> 更多信息</button>
-				<button class="btn btn-mini btn-danger download_remove"><i class="icon-remove"></i> 删除</button>
-			</div>
-		</div>
-		<br>
-		<div class="span11 progress full-progress progress-striped active">
-			<div class="bar" style="width: {{percentage}}%;"></div>
-		</div>
-		<div class="span11 more_info collapse">
-			<canvas class="span10 progress chunk-canvas" width="1400"></canvas>
-			<b class="span2 label active_settings">Status: <span class="tmp_status">{{status}}</span></b>
-			<b class="span2 label active_settings">GID: <span class="tmp_gid">{{gid}}</span></b>
-			<b class="span2 label active_settings">Dir: <span class="tmp_dir">{{dir}}</span></b>
-			<b class="span2 label active_settings">Size: <span class="tmp_size">{{size}}</span></b>
-			<b class="span2 label active_settings">Downloaded: <span class="tmp_downloaded">{{downloaded}}</span></b>
-			<b class="span2 label active_settings">Num of Pieces: <span class="tmp_numPieces">{{numPieces}}</span></b>
-			<b class="span2 label active_settings">Piece Length: <span class="tmp_pieceLength">{{pieceLength}}</span></b>
-			<b class="span2 label active_settings">ETA: <span class="tmp_eta">{{eta}}</span></b>
-			<b class="span2 label active_settings">Down Speed: <span class="tmp_down_speed">{{down_speed}}</span></b>
-			<b class="span2 label active_settings">Upload Speed: <span class="tmp_upload_speed">{{upload_speed}}</span></b>
-			<b class="span2 label active_settings">Upload Length: <span class="tmp_uploadLength">{{uploadLength}}</span></b>
-			<b class="span2 label active_settings">Connections: <span class="tmp_connections">{{connections}}</span></b>
-			<div class="span12">
-				<h3>Files</h3>
-				<ul>
-					{{#files}}
-					<li><b>{{path}} <span class="label">{{size}}</span></b></li>
-					{{/files}}
-				</ul>
-			</div>
-			<div class="pull-right" style="margin-right: 5px;">
-				<button class="btn btn-mini download_settings"><i class="icon-cog"></i> Download Settings for {{sett_name}}</button>{{#bittorrent}}<button class="btn btn-mini torrent_info"><i class="icon-list-alt"></i> Peers</button>{{/bittorrent}}
-			</div>
-			<div class="span11">
-				<div class="active_graph"></div>
-			</div>
-		</div>
-	</div>
-	</script>
-	<!-- active downloads template end }}}-->
+  <script src="js/libs/angular.js"></script>
 
-	<!--{{{ waiting downloads template-->
-	<script type="text/mustache" id="download_waiting_template">
-		<div class="row download_item download_waiting_item" data-gid="{{gid}}" data-settingsName={{sett_name}}>
-		<div class="span2 download_name">
-			<b style="font-size: 12px;" class="tmp_name">{{name}}</b>
-		</div>
-		<div class="span6">
-			<span class="badge badge-warning">状态: <span class="tmp_status">{{status}}</span></span>
-			<div class="pull-right">
-				<span class="label label-warning">大小: <span class="tmp_size">{{size}}</span></span> |
-				<span class="label label-warning">剩余大小: <span class="tmp_remaining">{{remaining}}</span></span> |
-				<span class="label label-warning">进度: <span class="tmp_percentage">{{percentage}}</span>%</span>
-			</div>
-		</div>
-		<div class="span3">
-			<div class="button_set">
-				<button class="btn btn-mini download_play"><i class="icon-play"></i> 恢复</button>
-				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> 更多信息</button>
-				<button class="btn btn-mini btn-danger download_remove"><i class="icon-fire"></i> 清除</button>
-			</div>
-		</div>
-		<br>
-		<div class="span11 full-progress progress progress-striped">
-			<div class="bar" style="width: {{percentage}}%; background-color:#FBB450"></div>
-		</div>
-		<div class="span12 more_info collapse">
-			<b class="span2 label active_settings">Status: <span class="tmp_status">{{status}}</span></b>
-			<b class="span2 label active_settings">GID: <span class="tmp_gid">{{gid}}</span></b>
-			<b class="span2 label active_settings">Dir: <span class="tmp_dir">{{dir}}</span></b>
-			<b class="span2 label active_settings">Size: <span class="tmp_size">{{size}}</span></b>
-			<b class="span2 label active_settings">Downloaded: <span class="tmp_downloaded">{{downloaded}}</span></b>
-			<b class="span2 label active_settings">Num of Pieces: <span class="tmp_numPieces">{{numPieces}}</span></b>
-			<b class="span2 label active_settings">Piece Length: <span class="tmp_pieceLength">{{pieceLength}}</span></b>
-			<b class="span2 label active_settings">Upload Length: <span class="tmp_uploadLength">{{uploadLength}}</span></b>
-			<div class="pull-right" style="margin-right: 5px;">
-			<button class="btn btn-mini download_settings"><i class="icon-cog"></i> Download Settings for {{sett_name}}</button>
-			</div>
-		</div>
-	</div>
-	</script>
-	<!-- waiting downloads template end }}}-->
+  <script src="js/libs/angularui-bootstrap.js"></script>
 
-	<!--{{{ stopped downloads template-->
-	<script type="text/mustache" id="download_stopped_template">
-		<div class="row download_item download_stopped_item" data-gid="{{gid}}">
-		<div class="span2 download_name">
-			<b style="font-size: 12px;" class="tmp_name">{{settings_name}}</b>
-		</div>
-		<div class="span6">
-			{{#booleans.is_error}}
-			<span class="badge badge-important">状态: <span class="tmp_status">{{status}}</span></span>
-			<div class="pull-right">
-				<span class="label label-important">大小: <span class="tmp_size">{{size}}</span></span> |
-				<span class="label label-important">已下载: <span class="tmp_downloaded">{{downloaded}}</span></span> |
-				<span class="label label-important">进度: <span class="tmp_percentage">{{percentage}}</span>%</span>
-			</div>
-			{{/booleans.is_error}}
-			{{^booleans.is_error}}
-			<span class="badge badge-info">状态: <span class="tmp_status">{{status}}</span></span>
-			<div class="pull-right">
-				<span class="label label-info">大小: <span class="tmp_size">{{size}}</span></span> |
-				<span class="label label-info">已下载: <span class="tmp_downloaded">{{downloaded}}</span></span> |
-				<span class="label label-info">进度: <span class="tmp_percentage">{{percentage}}</span>%</span>
-			</div>
-			{{/booleans.is_error}}
-		</div>
-		<div class="span3">
-			<div class="button_set">
-				<button class="btn btn-mini download_restart"><i class="icon-repeat"></i> 重试</button>
-				<button class="btn btn-mini btn-info" data-toggle="collapse" data-target="[data-gid={{gid}}] .more_info" onclick="$(this).button('toggle');"><i class="icon-info-sign"></i> 更多信息</button>
-				<button class="btn btn-mini btn-danger download_remove"><i class="icon-fire"></i> 清除</button>
-			</div>
-		</div>
-		<br>
-		<div class="span11 full-progress progress progress-striped">
-			{{#booleans.is_error}}
-			<div class="bar" style="width: {{percentage}}%; background-color:rgb(185, 74, 72)"></div>
-			{{/booleans.is_error}}
-			{{^booleans.is_error}}
-			<div class="bar" style="width: {{percentage}}%; background-color:#3A87AD"></div>
-			{{/booleans.is_error}}
-		</div>
-		<div class="span12 more_info collapse">
-			<b class="span2 label active_settings">Status: <span class="tmp_status">{{status}}</span></b>
-			<b class="span2 label active_settings">GID: <span class="tmp_gid">{{gid}}</span></b>
-			<b class="span2 label active_settings">Dir: <span class="tmp_dir">{{dir}}</span></b>
-			<b class="span2 label active_settings">Size: <span class="tmp_size">{{size}}</span></b>
-			<b class="span2 label active_settings">Downloaded: <span class="tmp_downloaded">{{downloaded}}</span></b>
-			<b class="span2 label active_settings">Num of Pieces: <span class="tmp_numPieces">{{numPieces}}</span></b>
-			<b class="span2 label active_settings">Piece Length: <span class="tmp_pieceLength">{{pieceLength}}</span></b>
-			<b class="span2 label active_settings">Upload Length: <span class="tmp_uploadLength">{{uploadLength}}</span></b>
-		</div>
-	</div>
-	</script>
-	<!-- stopped downloads template end }}}-->
 
-	<!--{{{  start global settings item template -->
-	<script type="text/mustache" id="global_general_settings_template">
-	{{#settings}}
-	<fieldset>
-		<legend>{{name}}</legend>
-			<div class="control-group">
-				{{#values}}
-				<label class="control-label" for="input_settings_{{name}}">{{name}}</label>
-				<div class="controls">
-					{{^options}}
-						{{#has_value}}
-						<input typ="text" class="input-xlarge" id="input_settings_{{name}}" value="{{value}}"/>
-						{{/has_value}}
+  <script src="js/libs/jquery.flot.js"></script>
+  <script src="js/libs/jquery.flot.time.js"></script>
 
-						{{^has_value}}
-						<input typ="text" class="input-xlarge" placeholder="default" id="input_settings_{{name}}"/>
-						{{/has_value}}
-					{{/options}}
+  <!-- We do manual resize currently
+  <script src="js/libs/jquery.flot.resize.js"></script>
+  -->
 
-					{{#option}}
-						{{#has_value}}
-						<select id="input_settings_{{name}}">
-						{{/has_value}}
+  <!-- webui core -->
+  <script src="js/init.js"></script>
+  <script src="configuration.js"></script>
 
-						{{^has_value}}
-						<select id="input_settings_{{name}}">
-								<option value="no_val">Default</option>
-						{{/has_value}}
+  <script src="js/directives/chunkbar.js"></script>
+  <script src="js/directives/dgraph.js"></script>
+  <script src="js/directives/fselect.js"></script>
 
-					{{/option}}
+  <script src="js/filters/bytes.js"></script>
 
-					{{#options}}
+  <script src="js/services/deps.js"></script>
+  <script src="js/services/base64.js"></script>
+  <script src="js/services/utils.js"></script>
 
-						{{#has_value}}
-						<option value="{{& val}}">{{disp}}</option>
-						{{/has_value}}
+  <script src="js/services/modals.js"></script>
+  <script src="js/services/alerts.js"></script>
 
-						{{^has_value}}
-						<option value="{{& .}}">{{.}}</option>
-						{{/has_value}}
+  <script src="js/services/settings/settings.js"></script>
+  <script src="js/services/settings/filters.js"></script>
 
-					{{/options}}
+  <script src="js/services/rpc/jsoncall.js"></script>
+  <script src="js/services/rpc/sockcall.js"></script>
+  <script src="js/services/rpc/syscall.js"></script>
+  <script src="js/services/rpc/rpc.js"></script>
+  <script src="js/services/rpc/helpers.js"></script>
 
-					{{#option}}
-					</select>
-					{{/option}}
 
-					<p class="help-block">{{desc}}</p>
-					<br><br>
-				</div>
-				{{/values}}
-			</div>
-		</fieldset>
-		{{/settings}}
-
-	</script>
-	<!-- global settings template end }}}-->
-
-	<!-- {{{ torrent info template -->
-	<script type="text/mustache" id="torrent_info_template">
-		<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>Peers for {{info_name}}</h3>
-		</div>
-		<div class="modal-body">
-			<table class="table table-bordered table-striped table-condensed">
-				<thead>
-					<td>Address</td>
-					<td>Peer Choking Aria2</td>
-					<td>Aria2 Choking Peer</td>
-					<td>Seeder</td>
-					<td>Upload Speed</td>
-					<td>Download Speed</td>
-				</thead>
-				<tbody>
-					{{#peers}}
-					<tr>
-						<td>{{ip}}:{{port}}</td>
-						<td>{{peerChoking}}</td>
-						<td>{{amChoking}}</td>
-						<td>{{seeder}}</td>
-						<td>{{downloadSpeed}}</td>
-						<td>{{uploadSpeed}}</td>
-					{{/peers}}
-					{{^peers}}
-						<td colspan="6" style="text-align: center;"><h2>No peers connected!</h2></td>
-					{{/peers}}
-				</tbody>
-			</table>
-		</div>
-		<div class="modal-footer">
-			<button class="btn btn-success" data-dismiss="modal">Close</button>
-		</div>
-	</script>
-	<!-- }}} -->
-
-	<!--{{{ download settings template start -->
-	<script type="text/mustache" id="download_settings_template">
-
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>{{settings_name}} Download Settings</h3>
-	</div>
-	<div class="modal-body">
-		<form class="form-horizontal" id="dynamic_download_settings" data-downloadSettingsGid="{{gid}}">
-		{{#settings}}
-			<fieldset>
-				<legend>{{name}}</legend>
-				<div class="control-group">
-					{{#values}}
-					<label class="control-label" for="download_settings_{{name}}">{{name}}</label>
-					<div class="controls">
-						{{^options}}
-							{{#has_value}}
-							<input typ="text" class="input-xlarge" id="download_settings_{{name}}" value="{{value}}"/>
-							{{/has_value}}
-
-							{{^has_value}}
-							<input typ="text" class="input-xlarge" placeholder="default" id="download_settings_{{name}}"/>
-							{{/has_value}}
-						{{/options}}
-
-						{{#option}}
-							{{#has_value}}
-							<select id="download_settings_{{name}}">
-							{{/has_value}}
-
-							{{^has_value}}
-							<select id="download_settings_{{name}}">
-								<option value="no_val">Default</option>
-							{{/has_value}}
-
-						{{/option}}
-
-						{{#options}}
-
-							{{#has_value}}
-							<option value="{{& val}}">{{disp}}</option>
-							{{/has_value}}
-
-							{{^has_value}}
-							<option value="{{& .}}">{{.}}</option>
-							{{/has_value}}
-
-						{{/options}}
-
-						{{#option}}
-						</select>
-						{{/option}}
-
-						<p class="help-block">{{desc}}</p>
-						<br><br>
-					</div>
-					{{/values}}
-				</div>
-			</fieldset>
-			{{/settings}}
-
-		</form>
-	</div>
-	<div class="modal-footer">
-		<button id="save_download_settings" class="btn btn-success">Save</button>
-	</div>
-	</script>
-	<!-- download settings template end }}}-->
-
+  <script src="js/ctrls/main.js"></script>
+  <script src="js/ctrls/modal.js"></script>
+  <script src="js/ctrls/nav.js"></script>
+  <script src="js/ctrls/alert.js"></script>
+  <script src="js/ctrls/props.js"></script>
 </head>
-<body>
-<div class="navbar navbar-fixed-top">
-	<div class="navbar-inner">
-	<div class="container">
-		<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-		<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-		</a>
+<!-- }}} -->
 
-		<a class="brand" href="#">aria2 下载管理</a>
-		<div class="nav-collapse">
-		<ul class="nav">
-			<li class="active"><a href="#">所有下载</a></li>
-			<li class="dropdown" id="add_download">
-			<a class="dropdown-toggle" data-toggle="dropdown" href="#add_download">
-				新建下载
-				<b class="caret"></b>
-			</a>
-			<ul class="dropdown-menu">
-				<li><a id="newDownload" href="#">普通下载</a></li>
-				<li><a id="newDownload_metalink" href="#">磁力链接</a></li>
-				<li><a id="newDownload_torrent" href="#">BT种子</a></li>
-			</ul>
-			</li>
-			<li class="dropdown" id="stop_downloads">
-			<a class="dropdown-toggle" data-toggle="dropdown" href="#stop_downloads">
-				操作全部
-				<b class="caret"></b>
-			</a>
-			<ul class="dropdown-menu">
-				<li><a href="#" onclick="force_pause_all()"><i class="icon-pause"></i> 暂停所有</a></li>
-				<li><a href="#" onclick="force_remove_all()"><i class="icon-remove"></i> 删除所有</a></li>
-				<li><a href="#" onclick="force_purge_all()"><i class="icon-fire"></i> 清除所有</a></li>
-			</ul>
-			</li>
-		</ul>
+<body ng-controller="MainCtrl">
 
-		<ul class="nav pull-right">
-			<li class="dropdown">
-				<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-					设置 <b class="caret"></b>
-				</a>
-				<ul class="dropdown-menu">
-					<li><a href="#" onclick="custom_aria2_connect()">
-						<i class="icon-wrench"></i> 连接设置</a>
-					</li>
-					<li><a href="#" onclick="custom_global_settings()">
-						<i class="icon-wrench"></i> 全局设置</a></li>
-					<li><a href="#" onclick="custom_global_statistics()">
-						<i class="icon-list-alt"></i> 全局状态</a></li>
-					<li><a href="#" onclick="show_about()">关于</a></li>
-				</ul>
-			</li>
-		</ul>
-		</div><!--/.nav-collapse -->
-	</div>
-	</div>
-</div>
+<!-- {{{ header -->
+<div class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavCtrl">
+  <div class="navbar-inner">
+  <div class="container">
+    <!--  using a span for collapse rather than a to fix the angular majic on anchors -->
+    <span class="btn btn-navbar"
+      ng-click="collapsed = !collapsed">
 
-<div role="main" class="container">
-	<!-- Download items here -->
+      <span class="fa fa-fw fa-bars"></span>
+      <span class="fa fa-fw fa-bars"></span>
+      <span class="fa fa-fw fa-bars"></span>
+    </span>
 
-	<div id="active_downloads"></div>
+    <a class="brand"><span class="fa fa-fw fa-arrow-circle-down"></span> {{ name }}</a>
 
-	<div id="waiting_downloads"></div>
+    <form class="navbar-form pull-right control-group">
+      <input class="span3 input-large" type="text" placeholder="Search" ng-model="downloadFilter" autocomplete="off" ng-change="onDownloadFilter()"></input>
+    </form>
+    <div class="nav-collapse" collapse="collapsed">
 
-	<div id="stopped_downloads"></div>
+    <!-- {{{ Nav menu -->
+    <ul class="nav">
+      <li class="dropdown">
+        <a class="dropdown-toggle" href="#">
+          添加 <b class="caret"></b>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="#" ng-click="addUris()">
+              <i class="fa fa-fw fa-arrow-circle-o-down">&nbsp;</i> 添加链接
+            </a>
+          </li>
+          <li ng-show="isFeatureEnabled('BitTorrent') && enable.torrent">
+            <a href="#" ng-click="addTorrents()">
+              <i class="fa fa-fw fa-cloud-download">&nbsp;</i> 添加BT种子
+            </a>
+          </li>
+          <li ng-show="isFeatureEnabled('Metalink') && enable.metalink">
+            <a href="#" ng-click="addMetalinks()">
+              <i class="fa fa-fw fa-file-text-o">&nbsp;</i> 添加Metalinks
+            </a>
+          </li>
+        </ul>
+      </li>
 
-</div>
+      <li class="dropdown">
+      <a class="dropdown-toggle" href="#"> 管理 <b class="caret"></b></a>
+      <ul class="dropdown-menu">
+        <li>
+          <a
+            href="#"
+            ng-click="forcePauseAll()"><i class="fa fa-fw fa-pause">&nbsp;</i> 暂停所有</a>
+        </li>
+        <li>
+          <a
+            href="#"
+            ng-click="unpauseAll()"><i class="fa fa-fw fa-play">&nbsp;</i> 回复下载</a>
+        </li>
+        <li>
+          <a
+            href="#"
+            ng-click="purgeDownloadResult()"><i class="fa fa-fw fa-times-circle">&nbsp;</i> 清除完成</a>
+        </li>
 
+        <!-- not adding remove all as requires many rpc syscalls to finish
+        <li>
+          <a
+            href="#"
+            ng-click="removeAll()"><i class="fa fa-fw fa-fire">&nbsp;</i> Remove All</a>
+        </li>
+        -->
+      </ul>
+      </li>
 
-<!--{{{ Hidden dialogs and out of screen HTML elements  -->
+    </ul>
 
-<!--{{{ error connection template -->
-<div class="modal hide" id="error_connect">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>连接到aria2失败 :( </h3>
-	</div>
-	<div class="modal-body">
-		<p>
-			Make sure that aria2c is running and rpc is enabled.
-			aria2c --enable-rpc
-		</p>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="window.location.reload(true)" class="btn">重试</a>
-		<a href="#" onclick="custom_aria2_connect()" class="btn btn-primary">修改连接设置</a>
-	</div>
-</div>
-<!-- error connection end }}}-->
+    <ul class="nav">
+      <li class="dropdown">
+        <a
+          href="#"
+          class="dropdown-toggle">设置 <b class="caret"></b></a>
 
-<!--{{{ No file api template -->
-<div class="modal hide" id="error_file_api">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>Unfortunately your browser does not support HTML5 File Api :( </h3>
-	</div>
-	<div class="modal-body">
-		<p>
-			To use this feature, please upgrade your browser to a somewhat recent version.
-			If you have no clue then head on to <a href="http://firefox.com">http://firefox.com</a>
-			and follow instructions there.
-		</p>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="clear_dialogs()" class="btn">Close</a>
-	</div>
-</div>
-<!-- no file api end }}}-->
+        <ul class="dropdown-menu">
+          <li>
+            <a
+              ng-click="changeCSettings()"
+              href="#"><i class="fa fa-fw fa-wrench">&nbsp;</i> 连接设置</a>
+          </li>
 
-<!--{{{ About template -->
-<div class="modal hide" id="about_modal">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>关于 </h3>
-	</div>
-	<div class="modal-body">
-		<p>
-			aria2 version: <span class="about_aria_version"></span>
-			<br>
-			Web-Client status: <span class="about_webclient_version"></span>
-		</p>
-		<p>
-			To download the latest version of the project head on to
-			<a href="https://github.com/ziahamza/webui-aria2">http://github.com/ziahamza/webui-aria2</a>
-			<br>
-			Or you can open the latest version in browser through <a href="http://ziahamza.github.com/webui-aria2">http://ziahamza.github.com/webui-aria2</a>
-<br>
-		<a href="http://ghostry.cn">ghostry</a>汉化
-		</p>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="clear_dialogs()" class="btn">关闭</a>
-	</div>
-</div>
-<!-- About end }}}-->
+          <li>
+            <a
+              ng-click="changeGSettings()"
+              href="#"><i class="fa fa-fw fa-wrench">&nbsp;</i> 全局设置</a>
+          </li>
 
-<!--{{{ global statistics template -->
-<div class="modal hide" id="global_statistics_modal">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>aria2 Global Statistics</h3>
-	</div>
-	<div class="modal-body">
-		<p class="row-fluid global_statistics_list" style="text-align: center;">
-			<h5 class="span3 badge" style="text-align: center; margin: 5px;">Overall Download Speed: <span class="stat_downloadSpeed"></span></h5>
-			<h5 class="span3 badge" style="text-align: center; margin: 5px;">Overall Upload Speed: <span class="stat_uploadSpeed"></span></h5>
-			<h5 class="span3 badge" style="text-align: center; margin: 5px;">Total Active Downloads: <span class="stat_numActive"></span></h5>
-			<h5 class="span3 badge" style="text-align: center; margin: 5px;">Total Waiting Downloads: <span class="stat_numWaiting"></span></h5>
-			<h5 class="span3 badge" style="text-align: center; margin: 5px;">Total Stopped Downloads: <span class="stat_numStopped"></span></h5>
-			<div class="span5 stat_graph">
-			</div>
-		</p>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="clear_dialogs()" class="btn">Close</a>
-	</div>
-</div>
-<!-- global statistics end }}}-->
+          <li>
+            <a
+              ng-click="showServerInfo()"
+              href="#"><i class="fa fa-fw fa-info-circle">&nbsp;</i> 服务信息</a>
+          </li>
 
-<!--{{{ change aria2 rpc host and port template -->
-<div class="modal hide" id="change_conf">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>连接设置</h3>
-	</div>
-	<div class="modal-body">
-		<form class="form-horizontal">
-			<fieldset>
-				<legend>Aria2 RPC 主机和端口</legend>
-				<div class="control-group">
-					<label class="control-label" for="input_host">主机地址:</label>
-					<div class="controls">
-						<div class="input-prepend"><span class="add-on">http(s)://</span><input type="text" class="input-xlarge" id="input_host" placeholder="localhost"/></div>
-						<p class="help-block">Enter the ip or dns name of the server on which the rpc for aria2 is running (default = localhost)</p>
-					</div>
-					<label class="control-label" for="input_port">端口:</label>
-					<div class="controls">
-						<input type="text" class="input-xlarge" placeholder="6800" id="input_port"/>
-						<p class="help-block">Enter the port of the server on which the rpc for aria2 is running (default = 6800)</p>
-					</div>
+          <li>
+            <a
+              ng-click="showAbout()"
+              href="#"><i class="fa fa-fw fa-question-circle">&nbsp;</i> 关于</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
 
-					<label class="control-label" for="input_encryption">SSL/TLS encryption:</label>
-					<div class="controls">
-						<button type="button" class="btn" data-toggle="button" id="input_encryption">ON</button>
-						<p class="help-block">Enable SSL/TLS encryption.</p>
-					</div>
+    <ul class="nav pull-right" ng-show="false">
+      <li class="dropdown">
+        <a
+          class="dropdown-toggle"
+          href="#">杂项 <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="#"><i class="fa fa-fw fa-list-alt">&nbsp;</i> 全局设置</a>
+          </li>
+          <li>
+            <a href="#"><i class="fa fa-fw fa-info-circle">&nbsp;</i> 关于</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <!-- }}} -->
 
-					<label class="control-label" for="input_user">用户名:</label>
-					<div class="controls">
-						<input type="text" class="input-xlarge" id="input_user"/>
-						<p class="help-block">Enter the aria2 RPC username (empty if authentication not enabled)</p>
-					</div>
-					<label class="control-label" for="input_pass">密码:</label>
-					<div class="controls">
-						<input type="password" class="input-xlarge" id="input_pass"/>
-						<p class="help-block">Enter the aria2 RPC password (empty if authentication not enabled)</p>
-					</div>
-				</div>
-			</fieldset>
-		</form>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="window.location.reload(true)" class="btn">重置</a>
-		<a href="#" onclick="update_server_conf()" class="btn btn-primary">确认</a>
-	</div>
-</div>
-<!-- change aria2 rpc host and port template }}}-->
-
-<!--{{{ add new torrent -->
-<div class="modal hide" id="new_torrent">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>添加BT种子</h3>
-	</div>
-	<div class="modal-body">
-		<form class="form-horizontal">
-			<fieldset>
-				<div class="control-group">
-					<label class="control-label" for="input_torrent">选择种子:</label>
-					<div class="controls">
-						<input type="file" class="input-xlarge" id="input_torrent" multiple/>
-						<p class="help-block">
-							Select the local torrent file to start download.
-							To add a magnet torrent url, use the add url option and add it there.
-							Note that you can select multiple torrent files to start at once.
-						</p>
-					</div>
-				</div>
-			</fieldset>
-		</form>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="add_torrent()" class="btn">添加</a>
-		<a href="#" onclick="clear_dialogs()" class="btn">取消</a>
-	</div>
-</div>
-<!-- add new torrent end }}}-->
-
-<!--{{{ add new metalink -->
-<div class="modal hide" id="new_metalink">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>添加磁力链</h3>
-	</div>
-	<div class="modal-body">
-		<form class="form-horizontal">
-			<fieldset>
-				<legend>上传磁力链文件</legend>
-				<div class="control-group">
-					<label class="control-label" for="input_metalink">磁力链文件:</label>
-					<div class="controls">
-						<input type="file" class="input-xlarge" id="input_metalink" multiple/>
-						<p class="help-block">
-						Please select a local metalink file to initiate its downloads. Note that you
-						can select multiple metalink files at once to start
-如果是磁力链接请使用添加普通下载来添加。
-						</p>
-					</div>
-				</div>
-			</fieldset>
-		</form>
-	</div>
-	<div class="modal-footer">
-		<a href="#" onclick="add_metalink()" class="btn">添加</a>
-		<a href="#" onclick="clear_dialogs()" class="btn">取消</a>
-	</div>
-</div>
-<!-- add new metalink end }}}-->
-
-<!--{{{ add new Download template -->
-<div class="modal hide" id="newDownload_modal">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>添加普通下载</h3>
-	</div>
-	<div class="modal-body">
-		<form class="form-horizontal">
-			<fieldset>
-				<legend>下载地址</legend>
-				<div class="control-group">
-					<label class="control-label" for="newDownload_url">输入下载地址:</label>
-					<div class="controls">
-						<input type="text" class="input-xlarge" id="newDownload_url" placeholder="http://example.com"/>
-						<button class="btn" href="#" id="multiple_uris"><i class="icon-plus-sign"></i></button>
-						<span class="help-block">可以使用 HTTP(S)/FTP/磁力链接. You can add multiple uris for the SAME file and the aria2 will accelerate download by downloading from many uris at the same time.</span>
-					</div>
-				</div>
-			</fieldset>
-		</form>
-	</div>
-	<div class="modal-footer">
-		<button id="addNewDownload" class="btn">添加</button>
-	</div>
-</div>
-<!-- add new Download template end }}}-->
-
-<!--{{{ global settings template start -->
-<div class="modal hide" id="global_settings_modal">
-	<div class="modal-header">
-		<button class="close" data-dismiss="modal">x</button>
-		<h3>Global Settings</h3>
-	</div>
-	<div class="modal-body">
-		<form class="form-horizontal" id="dynamic_global_settings">
-			<!-- dynamic settings injection here -->
-		</form>
-	</div>
-	<div class="modal-footer">
-		<button id="save_global_settings" class="btn btn-success">Save</button>
-	</div>
-</div>
-<!-- global settings template end }}}-->
-
-<!--{{{ download settings template start -->
-<div class="modal hide" id="download_settings_modal">
-</div>
-<!-- download settings template end }}}-->
-
-<!--{{{ torrent info modal -->
-<div class="modal hide" id="torrent_info_modal" style="width: 600px;">
+    </div><!--/.nav-collapse -->
+  </div>
+  </div>
 </div>
 <!-- }}} -->
 
-<!-- }}} hidden modals end -->
+<!-- {{{ body -->
+<div role="main" class="container-fluid">
 
-<script src="js/plugins.js"></script>
+  <!-- {{{ alerts -->
+  <div ng-controller="AlertCtrl" class="row-fluid alerts">
+    <div class="alert alert-{{alert.type}}" ng-repeat="alert in pendingAlerts">
+      <button type="button" class="close" ng-click="removeAlert($index)">x</button>
+      <span ng-bind-html="alert.msg"></span>
+    </div>
+  </div>
+  <!-- }}} -->
 
-<script src="js/script.js"></script>
+<div class="row-fluid">
+  <div ng-class="{'span3': enable.sidebar.show}" ng-show="enable.sidebar.show">
+    <!-- {{{ nav side bar -->
+    <div class="well sidebar-nav">
 
+      <!-- {{{ global statistics -->
+      <ul class="nav nav-list" ng-if="enable.sidebar.stats">
+        <li class="nav-header" ng-show="totalAria2Downloads()">全局统计</li>
+        <li>
+          <div
+            yticks="3"
+            xticks="1"
+            dspeed="gstats.downloadSpeed"
+            uspeed="gstats.uploadSpeed"
+            dgraph ng-show="totalAria2Downloads()"
+            nolabel="true"
+            draw="true">
+          </div>
+        </li>
+      </ul>
+      <!-- }}} -->
+
+      <br>
+
+
+      <!-- {{{ download filters -->
+      <ul id="filters" class="clearfix nav nav-list" ng-show="enable.sidebar.filters">
+        <li class="nav-header">显示条件</li>
+        <li>
+          <label for="filter-speed">
+            <input type="checkbox" ng-model="filterSpeed" ng-change="persistFilters()" id="filter-speed">
+            运行中
+          </label>
+        </li>
+        <li class="active">
+          <label for="filter-active">
+            <input type="checkbox" ng-model="filterActive" ng-change="persistFilters()" id="filter-active">
+            激活
+          </label>
+        </li>
+        <li>
+          <label for="filter-waiting">
+            <input type="checkbox" ng-model="filterWaiting" ng-change="persistFilters()" id="filter-waiting">
+            排队中
+          </label>
+        </li>
+        <li>
+          <label for="filter-complete">
+            <input type="checkbox" ng-model="filterComplete" ng-change="persistFilters()" id="filter-complete">
+            完成
+          </label>
+        </li>
+        <li>
+          <label for="filter-error">
+            <input type="checkbox" ng-model="filterError" ng-change="persistFilters()" id="filter-error">
+            错误
+          </label>
+        </li>
+        <li>
+          <label for="filter-paused">
+            <input type="checkbox" ng-model="filterPaused" ng-change="persistFilters()" id="filter-paused">
+            暂停
+          </label>
+        </li>
+        <li>
+          <label for="filter-removed">
+            <input type="checkbox" ng-model="filterRemoved" ng-change="persistFilters()" id="filter-removed">
+            删除
+          </label>
+        </li>
+        <li>
+          <label><input type="checkbox" ng-model="hideLinkedMetadata" id="hide-linked-metadata"> 隐藏链接的元数据</label>
+          <p>
+          已显示 <strong>{{totalDownloads}}</strong> / <em>{{totalAria2Downloads()}}</em> 
+          </p>
+          <p>
+            <button ng-click="toggleStateFilters()" class="btn btn-default btn-mini">反选</button>
+            <button ng-click="resetFilters()" class="btn btn-default btn-mini">重设</button>
+          </p>
+        </li>
+      </ul>
+      <!-- }}} -->
+
+      <br>
+
+
+      <!-- {{{ starred properties -->
+      <ul class="clearfix nav nav-list" ng-controller="StarredPropsCtrl" ng-show="properties.length && enable.sidebar.starredProps">
+        <li class="nav-header">快速设置</li>
+        <li ng-repeat="prop in properties">
+          <label title="{{prop.desc}}">
+            <div>{{prop.name}}</div>
+            <div class="control-group">
+              <select style="width: 100%;" ng-show="prop.options.length" ng-options="opt for opt in prop.options" ng-model="prop.val"></select>
+              <input style="width: 100%;" ng-show="!prop.options.length" type="text" class="input-large" ng-model="prop.val"/>
+            </div>
+          </label>
+        </li>
+        <li>
+          <button ng-disabled="!enabled()" ng-click="save()" class="btn btn-small">保存</button>
+        </li>
+      </ul>
+      <!-- }}} -->
+
+
+    </div>
+    <!-- }}} -->
+  </div>
+
+  <div ng-class="{'span9': enable.sidebar.show, 'span12': !enable.sidebar.show }">
+    <!-- {{{ downloads -->
+    <!-- Bug?? <div ng-show="!totalAria2Downloads() && totalAria2Downloads() > getDownloads()" class="hero-unit">-->
+    <div ng-show="!totalAria2Downloads()" class="hero-unit">
+      当前没有下载任务,使用 '<strong>添加</strong>' 增加新的下载.
+    </div>
+
+
+    <!-- {{{ download template -->
+
+    <table
+      ng-repeat="download in getDownloads()"
+      class="row-fluid download" data-gid="{{download.gid}}">
+      <tbody>
+      <tr>
+        <td class="download-name download-item" ng-click="toggleCollapsed(download)">
+          <i class="fa fa-fw fa-magnet" style="color: red;" ng-show="download.metadata"></i> {{download.name}}
+        </td>
+        <td class="download-controls download-item" rowspan="2">
+          <!-- {{{ download control buttons -->
+          <div class="btn-group">
+            <button
+              ng-show="hasStatus(download, ['active', 'waiting'])"
+              class="btn"
+              ng-click="pause(download)">
+              <i class="fa fa-fw fa-pause"></i>
+            </button>
+
+            <button
+              ng-show="hasStatus(download, 'paused')"
+              class="btn"
+              ng-click="resume(download)">
+              <i class="fa fa-fw fa-play"></i>
+            </button>
+
+            <button
+              ng-show="canRestart(download)"
+              class="btn"
+              ng-click="restart(download)">
+              <i class="fa fa-fw fa-repeat"></i>
+            </button>
+
+            <button
+              class="btn hidden-phone"
+              ng-click="remove(download)">
+              <i class="fa fa-fw fa-stop"></i>
+            </button>
+
+            <button
+              ng-show="hasStatus(download, 'paused')"
+              class="btn"
+              ng-click="selectFiles(download)">
+              <i class="fa fa-fw fa-list"></i>
+            </button>
+
+            <button
+              class="btn hidden-phone"
+              ng-show="['waiting', 'active'].indexOf( getType(download) )!= -1"
+              ng-click="showSettings(download)">
+              <i class="fa fa-fw fa-cog"></i>
+            </button>
+
+            <button class="btn dropdown-toggle">
+              <i class="caret"></i>
+            </button>
+            <ul class="dropdown-menu">
+
+              <li class="visible-phone">
+                <a
+                  ng-click="showSettings(download)"
+                  ng-show="['waiting', 'active'].indexOf( getType(download) )!= -1"
+                  href="#"><i class="fa fa-fw fa-cog">&nbsp;</i> 设置</a>
+              </li>
+
+              <li ng-show="download.bittorrent && false">
+                <a href="#"><i class="fa fa-fw fa-list-alt">&nbsp;</i> 节点</a>
+              </li>
+
+              <li>
+                <a ng-click="toggleCollapsed(download)"
+                   href="#"><i class="fa fa-fw fa-info-circle">&nbsp;</i> 更多信息</a>
+              </li>
+
+              <li class="visible-phone">
+                <a ng-click="remove(download)"
+                   href="#"><i class="fa fa-fw fa-times">&nbsp;</i> 删除</a>
+              </li>
+            </ul>
+          </div>
+          <!-- }}} -->
+        </td>
+      </tr>
+      <tr>
+        <td class="download-overview download-item" ng-click="toggleCollapsed(download)" ng-switch="download.status">
+          <!-- {{{ statistics -->
+          <ul class="stats pull-left" ng-switch-when="active">
+            <!-- {{{ active download statistics -->
+            <li class="label label-active hidden-phone hidden-tablet">
+              <span title="Download status"><i class="fa fa-fw fa-play">&nbsp;</i> {{download.status}}</span>
+            </li>
+
+            <li class="label" ng-class="{'label-active': download.downloadSpeed > 2048, 'label-warning': download.downloadSpeed <= 2048}">
+              <span title="Download Speed"><i class="fa fa-fw fa-arrow-circle-o-down">&nbsp;</i> {{download.downloadSpeed | bspeed}}</span>
+            </li>
+
+            <li ng-show="download.bittorrent" class="label hidden-phone" ng-class="{'label-info': download.uploadSpeed > 2048}">
+              <span title="Upload Speed"><i class="fa fa-fw fa-arrow-circle-o-up">&nbsp;</i> {{download.uploadSpeed | bspeed}}</span>
+            </li>
+
+            <li class="label label-active">
+              <span title="Estimated time"><i class="fa fa-fw fa-clock-o">&nbsp;</i> {{getEta(download) | time}}</span>
+            </li>
+
+            <li class="label label-active hidden-phone">
+              <span title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> {{download.fmtTotalLength}}</span>
+            </li>
+
+            <li class="label label-active hidden-phone">
+              <span title="Downloaded"><i class="fa fa-fw fa-arrow-circle-o-down">&nbsp;</i> {{download.fmtCompletedLength}}</span>
+            </li>
+
+            <li class="label label-active hidden-phone hidden-tablet">
+              <span title="Progress"><i class="fa fa-fw fa-chevron-right">&nbsp;</i> {{getProgress(download)}}%</span>
+            </li>
+
+            <!-- }}} -->
+          </ul>
+
+          <ul class="stats pull-left" ng-switch-when="paused">
+            <!-- {{{ paused download statistics -->
+            <li class="label label-info">
+              <span title="Download Status"><i class="fa fa-fw fa-pause">&nbsp;</i> {{download.status}}</span>
+            </li>
+
+            <li class="label label-info">
+              <span title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> {{download.fmtTotalLength}}</span>
+            </li>
+
+            <li class="label label-info hidden-phone">
+              <span title="Downloaded"><i class="fa fa-fw fa-download">&nbsp;</i> {{download.fmtCompletedLength}}</span>
+            </li>
+
+            <li class="label label-info hidden-phone">
+              <span title="Download Path"><i class="fa fa-fw fa-folder-open">&nbsp;</i> {{download.dir}}</span>
+            </li>
+
+            <!--  }}} -->
+          </ul>
+
+          <ul class="stats pull-left" ng-switch-when="waiting">
+            <!-- {{{ paused download statistics -->
+            <li class="label">
+              <span title="Download Status"><i class="fa fa-fw fa-caret-right">&nbsp;</i> {{download.status}}</span>
+            </li>
+
+            <li class="label">
+              <span title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> {{download.fmtTotalLength}}</span>
+            </li>
+
+            <li class="label hidden-phone">
+              <span title="Downloaded"><i class="fa fa-fw fa-download">&nbsp;</i> {{download.fmtCompletedLength}}</span>
+            </li>
+
+            <li class="label hidden-phone">
+              <span title="Download Path"><i class="fa fa-fw fa-folder-open">&nbsp;</i> {{download.dir}}</span>
+            </li>
+
+            <!--  }}} -->
+          </ul>
+
+          <ul class="stats pull-left" ng-switch-when="complete">
+            <!-- {{{ complete download statistics -->
+
+            <li class="label label-success">
+              <span title="Download Status"><i class="fa fa-fw fa-check-square-o">&nbsp;</i> {{download.status}}</span>
+            </li>
+
+            <li class="label label-success">
+              <span title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> {{download.fmtTotalLength}}</span>
+            </li>
+
+            <li class="label label-success hidden-phone">
+              <span title="Download Path"><i class="fa fa-fw fa-folder-open">&nbsp;</i> {{download.dir}}</span>
+            </li>
+
+            <!-- }}} -->
+          </ul>
+
+          <ul class="stats pull-left" ng-switch-when="removed">
+            <!-- {{{ removed download statistics -->
+            <li class="label label-warning">
+              <span title="Download Status"><i class="fa fa-fw fa-times">&nbsp;</i> {{download.status}}</span>
+            </li>
+
+            <li class="label label-warning">
+              <span title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> {{download.fmtTotalLength}}</span>
+            </li>
+
+            <li class="label label-warning hidden-phone">
+              <span title="Download Path"><i class="fa fa-fw fa-folder-open">&nbsp;</i> {{download.dir}}</span>
+            </li>
+
+            <!-- }}} -->
+          </ul>
+
+          <ul class="stats pull-left" ng-switch-when="error">
+            <!-- {{{ error download statistics -->
+            <li class="label label-important">
+              <span title="Download Status"><i class="fa fa-fw fa-times-circle">&nbsp;</i> {{download.status}}</span>
+            </li>
+
+            <li class="label label-important">
+              <span title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> {{download.fmtTotalLength}}</span>
+            </li>
+
+            <li class="label label-important hidden-phone">
+              <span title="Download Path"><i class="fa fa-fw fa-folder-open">&nbsp;</i> {{download.dir}}</span>
+            </li>
+
+            <!-- }}} -->
+          </ul>
+
+          <!-- }}} -->
+        </td>
+      </tr>
+      <tr>
+        <td class="download-progress download-item" colspan="2" ng-click="toggleCollapsed(download)">
+          <div class="progress progress-striped" ng-class="getProgressClass(download)">
+            <div class="bar" style="width: {{getProgress(download)}}%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" ng-click="toggleCollapsed(download)" ng-switch="download.collapsed">
+          <div ng-switch-when="false" collapse="download.animCollapsed">
+            <div class="download-item" ng-show="download.numPieces > 1">
+              <canvas bitfield="download.bitfield" draw="!download.collapsed" pieces="download.numPieces" class="progress chunk-canvas" width="1400" chunkbar></canvas>
+            </div>
+            <ul class="stats download-item">
+              <li class="label" title="Estimated Time"><i class="fa fa-fw fa-clock-o">&nbsp;</i> <span class="download-eta">{{getEta(download) | time}}</span></li>
+              <li class="label" title="Download Size"><i class="fa fa-fw fa-cloud-download">&nbsp;</i> <span class="download-totalLength">{{download.fmtTotalLength}}</span></li>
+              <li class="label" title="Downloaded"><i class="fa fa-fw fa-download">&nbsp;</i> <span class="download-completedLength">{{download.fmtCompletedLength}}</span></li>
+              <li class="label" title="Download Speed"><i class="fa fa-fw fa-arrow-circle-o-down">&nbsp;</i> <span class="download-downloadSpeed">{{download.fmtDownloadSpeed}}</span></li>
+
+              <li class="label" title="Upload Speed" ng-show="download.bittorrent"><i class="fa fa-fw fa-arrow-circle-o-up">&nbsp;</i> <span class="download-uploadSpeed">{{download.fmtUploadSpeed}}</span></li>
+              <li class="label" title="Uploaded" ng-show="download.bittorrent"><i class="fa fa-fw fa-upload">&nbsp;</i> <span class="download-uploadLength">{{download.fmtUploadLength}}</span></li>
+
+              <li class="label" title="Connections"><i class="fa fa-fw fa-link">&nbsp;</i> <span class="download-connections">{{download.connections}}</span></li>
+
+              <li class="label" title="Download GID"><i class="fa fa-fw fa-bars">&nbsp;</i> <span class="download-gid">{{download.gid}}</span></li>
+              <li class="label" title="Number of Pieces"># of <i class="fa fa-fw fa-puzzle-piece">&nbsp;</i> <span class="download-numPieces">{{download.numPieces}}</span></li>
+              <li class="label" title="Piece Length"><i class="fa fa-fw fa-puzzle-piece"></i> 长度&nbsp; <span class="download-pieceLength">{{download.fmtPieceLength}}</span></li>
+              <li class="label" title="Download Path"><i class="fa fa-fw fa-folder-open">&nbsp;</i> <span class="download-dir">{{download.dir}}</span></li>
+            </ul>
+            <ul class="download-files hidden-phone download-item">
+              <li class="label" ng-repeat="file in download.files" ng-class="{'label-success': file.selected}">{{file.relpath}} ({{file.fmtLength}})</li>
+            </ul>
+            <div ng-show="hasStatus(download, 'active')" class="download-item hidden-phone">
+              <div class="download-graph" dspeed="download.downloadSpeed" uspeed="download.uploadSpeed" xticks="7" yticks="7"  dgraph draw="!download.collapsed"></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+    </table>
+    <!-- }}} -->
+
+    <!-- }}} -->
+  </div>
+
+  <!-- {{{ download pagination -->
+  <div class="pagination pagination-right" ng-show="totalDownloads > pageSize">
+    <pagination
+      total-items="totalDownloads"
+      items-per-page="pageSize"
+      max-size="11"
+      page="currentPage"
+      boundary-links="true"
+      previous-text="&lsaquo;"
+      next-text="&rsaquo;"
+      first-text="&laquo;"
+      last-text="&raquo;"
+      >
+    </pagination>
+  </div>
+  <!-- }}} -->
+
+</div>
+</div>
+
+<!-- }}} -->
+
+<!-- {{{ modals -->
+<div ng-controller="ModalCtrl">
+
+<!--{{{ add uri modal -->
+<script type="text/ng-template" id="getUris.html">
+<div class="modal modal-adduris modal-large">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>添加下载链接</h3>
+  </div>
+  <form class="modal-body">
+    <fieldset>
+      <legend>下载链接</legend>
+      <p class="help-block">
+       - 你可以添加多个下载（文件）,
+       每行链接为一个文件。<br>
+	- 你也可以添加多个链接（镜像）的
+*相同*文件。这样做可以将多个链接下载到一个文件。<br>
+    - 一个链接可以是HTTP（s）/ FTP / 磁力链。
+    aria2将使用多个链接（镜像）增加
+该文件的下载速度（下载）。<br>
+    - 例如，添加两个链接（镜像）f1.jpg
+和两个链接 (镜像) f2.mp4，
+添加的链接方式如下：
+        <br>
+        <!-- pre tags print tabs, so do not indent them! -->
+<pre>
+http://ex1.com/f1.jpg http://ex2.com/f1.jpg
+http://ex1.com/f2.mp4 http://ex2.com/f2.mp4
+</pre>
+      </p>
+      <textarea rows="4" style="width: 100%" ng-model="getUris.uris"></textarea>
+
+        <div>
+          <div class="modal-advanced-title">
+            下载设置
+          </div>
+          <div class="form-horizontal control-group modal-advanced-options">
+            <div ng-repeat="(name, set) in getUris.settings">
+              <label class="control-label">{{name}}</label>
+
+              <div class="controls">
+                <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+                </select>
+                <input ng-show="!set.options.length" type="text" class="input-xxlarge modal-form-input-verylarge" ng-model="set.val"/>
+              </div>
+              <br>
+            </div>
+          </div>
+
+          <br />
+          <div ng-click="getUris.collapsed = !getUris.collapsed" class="modal-advanced-title">
+            高级设置
+            <i ng-hide="!getUris.collapsed" class="fa fa-fw fa-caret-right"></i>
+            <i ng-hide="getUris.collapsed" class="fa fa-fw fa-caret-down"></i>
+          </div>
+          <div collapse="getUris.collapsed" class="form-horizontal control-group modal-advanced-options">
+            <div ng-repeat="(name, set) in getUris.fsettings">
+              <!-- Empty bloc for the real label to be aligned with control -->
+              <label class="control-label"></label>
+              <p class="help-block controls">{{set.desc}}</p>
+
+              <label class="control-label">{{name}}</label>
+              <div class="controls">
+                <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+                </select>
+                <input ng-show="!set.options.length" type="text" class="input-xxlarge modal-form-input-verylarge" ng-model="set.val"/>
+              </div>
+              <br />
+            </div>
+          </div>
+        </div>
+    </fieldset>
+  </form>
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">取消</button>
+    <button class="btn btn-primary" ng-click="$close()">添加并开始</button>
+  </div>
+</div>
+</script>
+<!-- }}} -->
+
+<!-- {{{ add torrent modal -->
+<script type="text/ng-template" id="getTorrents.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>添加 BT 下载</h3>
+  </div>
+  <form class="modal-body">
+    <fieldset>
+      <legend>选择 Torrents</legend>
+      <p class="help-block">
+        - 从本地文件系统选择BT种子开始下载。<br>
+	- 你可以选择多个种子开始多下载<BR>
+	- 对于添加磁力链，使用添加链接选项添加。
+      </p>
+      <div class="form-horizontal control-group">
+        <label class="control-label" style="text-align: left;"><b>选择 Torrent:</b></label>
+        <div class="controls">
+          <input type="file" class="input-xlarge" fselect="getTorrents.files" multiple/>
+        </div>
+      </div>
+      <br />
+
+      <div>
+        <div class="modal-advanced-title">
+          下载设置
+        </div>
+        <div class="form-horizontal control-group modal-advanced-options">
+          <div ng-repeat="(name, set) in getTorrents.settings">
+            <label class="control-label">{{name}}</label>
+
+            <div class="controls">
+              <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+              </select>
+              <input ng-show="!set.options.length" type="text" class="input-xxlarge modal-form-input-verylarge" ng-model="set.val"/>
+            </div>
+            <br>
+          </div>
+        </div>
+
+        <br />
+        <div ng-click="getTorrents.collapsed = !getTorrents.collapsed" class="modal-advanced-title">
+          高级设置
+          <i ng-hide="!getTorrents.collapsed" class="fa fa-fw fa-caret-right"></i>
+          <i ng-hide="getTorrents.collapsed" class="fa fa-fw fa-caret-down"></i>
+        </div>
+        <div collapse="getTorrents.collapsed" class="form-horizontal control-group modal-advanced-options">
+          <div ng-repeat="(name, set) in getTorrents.fsettings">
+            <!-- Empty bloc for the real label to be aligned with control -->
+            <label class="control-label"></label>
+            <p class="help-block controls">{{set.desc}}</p>
+
+            <label class="control-label">{{name}}</label>
+            <div class="controls">
+              <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+              </select>
+              <input ng-show="!set.options.length" type="text" class="input-xxlarge modal-form-input-verylarge" ng-model="set.val"/>
+            </div>
+            <br />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">取消</button>
+    <button class="btn btn-primary" ng-click="$close()">添加并开始</button>
+  </div>
+</script>
+<!-- }}} -->
+
+<!-- {{{ add metalink modal -->
+<script type="text/ng-template" id="getMetalinks.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>添加Metalinks</h3>
+  </div>
+  <form class="modal-body">
+    <fieldset>
+      <legend>选择 Metalinks</legend>
+      <p class="help-block">
+        - 从本地文件系统选择Metalink开始下载。<br>
+	- 你可以选择多个metalinks启动多个下载
+      </p>
+      <div class="form-horizontal control-group">
+        <label class="control-label" style="text-align: left;"><b>Select a Metalinks:</b></label>
+        <div class="controls">
+          <input type="file" class="input-xlarge" fselect="getMetalinks.files" multiple/>
+        </div>
+      </div>
+      <br />
+
+      <div>
+        <div class="modal-advanced-title">
+          下载设置
+        </div>
+        <div class="form-horizontal control-group modal-advanced-options">
+          <div ng-repeat="(name, set) in getMetalinks.settings">
+            <label class="control-label">{{name}}</label>
+
+            <div class="controls">
+              <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+              </select>
+              <input ng-show="!set.options.length" type="text" class="input-xxlarge modal-form-input-verylarge" ng-model="set.val"/>
+            </div>
+            <br>
+          </div>
+        </div>
+
+        <br />
+        <div ng-click="getMetalinks.collapsed = !getMetalinks.collapsed" class="modal-advanced-title">
+          高级设置
+          <i ng-hide="!getMetalinks.collapsed" class="fa fa-fw fa-caret-right"></i>
+          <i ng-hide="getMetalinks.collapsed" class="fa fa-fw fa-caret-down"></i>
+        </div>
+        <div collapse="getMetalinks.collapsed" class="form-horizontal control-group modal-advanced-options">
+          <div ng-repeat="(name, set) in getMetalinks.fsettings">
+            <!-- Empty bloc for the real label to be aligned with control -->
+            <label class="control-label"></label>
+            <p class="help-block controls">{{set.desc}}</p>
+
+            <label class="control-label">{{name}}</label>
+            <div class="controls">
+              <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+              </select>
+              <input ng-show="!set.options.length" type="text" class="input-xxlarge modal-form-input-verylarge" ng-model="set.val"/>
+            </div>
+            <br />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">取消</button>
+    <button class="btn btn-primary" ng-click="$close()">添加并开始</button>
+  </div>
+</script>
+<!-- }}} -->
+
+<!-- {{{ select file modal -->
+<script type="text/ng-template" id="selectFiles.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>选择要下载的文件</h3>
+  </div>
+
+  <form class="form-horizontal modal-body">
+    <fieldset>
+      <div class="control-group">
+        <div ng-repeat="file in selectFiles.files">
+          <label class="control-label">选择文件 </label>
+
+          <div class="controls">
+            <label class="checkbox">
+              <input type="checkbox" ng-model="file.selected"/>{{file.relpath}}
+            </label>
+          </div>
+          <br><br>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">取消</button>
+    <button class="btn btn-primary" ng-click="$close()">修改</button>
+  </div>
+</script>
+<!-- }}} -->
+
+<!-- {{{ settings modal -->
+<script type="text/ng-template" id="settings.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>{{settings.title}}</h3>
+  </div>
+
+  <form class="form-horizontal modal-body">
+    <fieldset>
+      <div class="control-group">
+        <div ng-repeat="(name, set) in settings.settings">
+          <label class="control-label">{{name}}</label>
+
+          <div class="controls">
+            <select ng-show="set.options.length" ng-options="opt for opt in set.options" ng-model="set.val">
+            </select>
+            <input ng-show="!set.options.length" type="text" class="input-xlarge" ng-model="set.val"/>
+            <label class="checkbox" ng-show="set.starred != undefined">
+              <input type="checkbox" ng-model="set.starred"/> 快速访问 (显示在主页面)
+            </label>
+            <p class="help-block">{{set.desc}}</p>
+          </div>
+          <br><br>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">取消</button>
+    <button class="btn btn-primary" ng-click="$close()">{{settings.actionText}}</button>
+  </div>
+</script>
+<!-- }}} -->
+
+<!--{{{ connection modal -->
+<script type="text/ng-template" id="connection.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>连接设置</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal">
+      <fieldset>
+        <legend>Aria2 RPC 服务器</legend>
+        <div class="control-group">
+          <label class="control-label">服务地址:</label>
+          <div class="controls">
+            <div class="input-prepend">
+              <span class="add-on">http(s)://</span>
+              <input type="text" class="input-xlarge"
+                ng-model="connection.conf.host"/>
+            </div>
+            <p class="help-block">
+              输入 aria2 服务器地址 (默认为 192.168.1.1)
+            </p>
+          </div>
+
+          <label class="control-label">端口:</label>
+          <div class="controls">
+            <input type="text" class="input-xlarge modal-form-input-number"
+              ng-model="connection.conf.port"/>
+            <p class="help-block">
+              输入aria2服务器端口号 (默认为 6800)
+            </p>
+          </div>
+
+          <label class="control-label">SSL/TLS 加密:</label>
+          <div class="controls">
+            <label>
+              <input type="checkbox" ng-model="connection.conf.encrypt"/>
+              启用 SSL/TLS 加密.
+            </label>
+          </div>
+
+          <label class="control-label">secret token (可选):</label>
+          <div class="controls">
+            <label>
+              <input type="text" class="input-xlarge" ng-model="connection.conf.auth.token"/>
+              <p class="help-block">
+              输入 aria2 RPC secret token (如果验证没有启用留空)>
+              </p>
+            </label>
+          </div>
+
+          <label class="control-label">用户名 (可选):</label>
+          <div class="controls">
+            <input type="text" class="input-xlarge"
+              ng-model="connection.conf.auth.user"/>
+            <p class="help-block">
+              输入 aria2 RPC 用户名
+              (如果验证没有启用留空)
+            </p>
+          </div>
+
+          <label class="control-label">密码(可选):</label>
+          <div class="controls">
+            <input type="password" class="input-xlarge"
+              ng-model="connection.conf.auth.pass"/>
+            <p class="help-block">
+              输入aria2 RPC密码
+              (如果验证没有启用留空)
+            </p>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button href="#" class="btn" ng-click="$dismiss()">取消</button>
+    <button href="#" class="btn btn-primary" ng-click="$close()">
+      保存
+    </button>
+  </div>
+</script>
+<!-- }}} -->
+
+
+<!-- {{{ server info modal -->
+<script type="text/ng-template" id="server_info.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>Aria2 服务信息</h3>
+  </div>
+  <div class="modal-body">
+      <b>Aria2 Version {{miscellaneous.version}}</b>
+      <br><br>
+      <b>已启用功能</b>
+        <ul>
+        <li
+          ng-repeat="feature in miscellaneous.enabledFeatures">
+          <span>{{feature}}</span>
+        </li>
+        </ul>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">关闭</button>
+  </div>
+</script>
+<!-- }}} -->
+
+<!-- {{{ about modal -->
+<script type="text/ng-template" id="about.html">
+  <div class="modal-header">
+    <button class="close" ng-click="$dismiss()">x</button>
+    <h3>关于</h3>
+  </div>
+  <div class="modal-body">
+      <p>
+        To download the latest version of the project,<br />
+         add issues or to contribute back head on to:<br />
+        <a href="https://github.com/ziahamza/webui-aria2">http://github.com/ziahamza/webui-aria2</a>
+        <br /><br />
+        Or you can open the latest version in browser through:<br />
+        <a href="http://ziahamza.github.io/webui-aria2">http://ziahamza.github.io/webui-aria2</a>
+	<br /><br />
+	汉化<a href="http://blog.ghostry.cn/">ghostry</a>
+      </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" ng-click="$dismiss()">关闭</button>
+  </div>
+</script>
+<!-- }}} -->
+
+
+</div>
+<!-- }}} -->
+
+<!-- Bottom Padding -->
+<br /><br /><br /><br /><br />
 
 </body>
 </html>
